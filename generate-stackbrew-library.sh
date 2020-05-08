@@ -93,7 +93,7 @@ for version in "${versions[@]}"; do
 		)
 
 		variantAliases=( "${versionAliases[@]/%/-$variant}" )
-		ubuntuSuite="${ubuntuSuites[$version]:-$defaultubuntuSuite}"
+		ubuntuSuite="${ubuntuSuites[$version]:-$defaultUbuntuSuite}"
 		case "$variant" in
 			"$ubuntuSuite")
 				variantAliases+=( "${versionAliases[@]}" )
