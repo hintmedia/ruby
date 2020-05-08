@@ -70,8 +70,7 @@ for version in "${versions[@]}"; do
 	echo "$version: $fullVersion; $shaVal"
 
 	for v in \
-		alpine{3.10,3.11} \
-		{stretch,buster}{/slim,} \
+		{focal,bionic,xenial} \
 	; do
 		dir="$version/$v"
 		variant="$(basename "$v")"
@@ -79,30 +78,17 @@ for version in "${versions[@]}"; do
 		[ -d "$dir" ] || continue
 
 		case "$variant" in
-			slim|windowsservercore) template="$variant"; tag="$(basename "$(dirname "$dir")")" ;;
-			alpine*) template='alpine'; tag="${variant#alpine}" ;;
-			*) template='debian'; tag="$variant" ;;
+			*) template='ubuntu'; tag="$variant" ;;
 		esac
 		template="Dockerfile-${template}.template"
-
-		if [ "$variant" = 'slim' ]; then
-			tag+='-slim'
-		fi
 
 		sed -r \
 			-e 's!%%VERSION%%!'"$version"'!g' \
 			-e 's!%%FULL_VERSION%%!'"$fullVersion"'!g' \
 			-e 's!%%SHA256%%!'"$shaVal"'!g' \
 			-e 's!%%RUBYGEMS%%!'"$rubygems"'!g' \
-			-e 's/^(FROM (debian|buildpack-deps|alpine)):.*/\1:'"$tag"'/' \
+			-e 's/^(FROM (ubuntu|buildpack-deps)):.*/\1:'"$tag"'/' \
 			"$template" > "$dir/Dockerfile"
-
-		case "$v" in
-			# https://packages.debian.org/sid/libgdbm-compat-dev (needed for "dbm" core module, but only in Buster+)
-			stretch/slim)
-				sed -i -e '/libgdbm-compat-dev/d' "$dir/Dockerfile"
-				;;
-		esac
 
 		if [ -n "${newEnoughRubygems[$rcVersion]:-}" ]; then
 			sed -ri -e '/RUBYGEMS_VERSION/d' "$dir/Dockerfile"
