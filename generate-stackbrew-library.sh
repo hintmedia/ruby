@@ -6,13 +6,9 @@ declare -A aliases=(
 	[2.7]='2 latest'
 )
 
-defaultDebianSuite='buster'
-declare -A debianSuites=(
-	#[2.7]='buster'
-)
-defaultAlpineVersion='3.11'
-declare -A alpineVersion=(
-	#[2.3]='3.8'
+defaultUbuntuSuite='focal'
+declare -A ubuntuSuites=(
+	#[2.7]='focal'
 )
 
 self="$(basename "$BASH_SOURCE")"
@@ -79,17 +75,10 @@ join() {
 
 for version in "${versions[@]}"; do
 	for v in \
-		{buster,stretch}{,/slim} \
-		alpine{3.11,3.10} \
+		{focal,bionic,xenial} \
 	; do
 		dir="$version/$v"
 		variant="$(basename "$v")"
-
-		if [ "$variant" = 'slim' ]; then
-			# convert "slim" into "slim-buster"
-			# https://github.com/docker-library/ruby/pull/142#issuecomment-320012893
-			variant="$variant-$(basename "$(dirname "$v")")"
-		fi
 
 		[ -f "$dir/Dockerfile" ] || continue
 
@@ -104,16 +93,13 @@ for version in "${versions[@]}"; do
 		)
 
 		variantAliases=( "${versionAliases[@]/%/-$variant}" )
-		debianSuite="${debianSuites[$version]:-$defaultDebianSuite}"
+		ubuntuSuite="${ubuntuSuites[$version]:-$defaultubuntuSuite}"
 		case "$variant" in
-			"$debianSuite")
+			"$ubuntuSuite")
 				variantAliases+=( "${versionAliases[@]}" )
 				;;
-			*-"$debianSuite")
-				variantAliases+=( "${versionAliases[@]/%/-${variant%-$debianSuite}}" )
-				;;
-			"alpine${alpineVersion[$version]:-$defaultAlpineVersion}")
-				variantAliases+=( "${versionAliases[@]/%/-alpine}" )
+			*-"$ubuntuSuite")
+				variantAliases+=( "${versionAliases[@]/%/-${variant%-$ubuntuSuite}}" )
 				;;
 		esac
 		variantAliases=( "${variantAliases[@]//latest-/}" )
